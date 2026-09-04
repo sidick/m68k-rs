@@ -24,10 +24,19 @@ exclude = [
 ]
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"], optional = true }
+libm = "0.2"
+serde = { version = "1.0", default-features = false, features = [
+    "alloc",
+    "derive",
+], optional = true }
 
 [features]
-default = []
+default = ["std"]
+# Link against `std`. Disabling it builds the crate as `no_std` + `alloc`, for
+# embedding the emulator in bare-metal hosts. The downstream binary must then
+# supply a `#[global_allocator]`. Note that only `run_batch` allocates at
+# runtime; the `step`/`run_for_cycles` interpreter paths allocate nothing.
+std = ["serde?/std"]
 # Compile hot `run_batch` traces to native code with Cranelift. Without this
 # feature, batching and FastMem remain available through the portable executor.
 jit = [
@@ -40,8 +49,8 @@ jit = [
 # Runtime-only decode, FastMem, and JIT caches are rebuilt after deserialization.
 serde = ["dep:serde"]
 # Opt-in trace-opportunity accounting for emulator profiling. Disabled builds
-# contain none of the counters or reporting code.
-trace-profile = []
+# contain none of the counters or reporting code. Requires `std`.
+trace-profile = ["std"]
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 cranelift-codegen = { version = "0.132.0", optional = true }

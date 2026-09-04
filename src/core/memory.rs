@@ -1,5 +1,7 @@
 //! Memory access trait.
 
+use alloc::vec::Vec;
+
 /// Kind of bus-level fault during a memory access (distinct from 68000 address error).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BusFaultKind {

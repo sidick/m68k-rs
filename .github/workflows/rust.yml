@@ -68,6 +68,14 @@ jobs:
       - name: Run tests (all features)
         run: cargo test --all-features --locked
 
+      - name: Check no_std build
+        run: |
+          rustup target add thumbv7em-none-eabi
+          cargo check --lib --no-default-features --locked \
+            --target thumbv7em-none-eabi
+          cargo check --lib --no-default-features --features serde --locked \
+            --target thumbv7em-none-eabi
+
       - name: Verify crate package
         run: cargo package --locked
 

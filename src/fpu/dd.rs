@@ -12,7 +12,7 @@
 
 use super::softfloat::{self, ExcFlags, RoundCtx};
 use super::types::FloatX80;
-use std::sync::OnceLock;
+use crate::shim::OnceLock;
 
 // Round-to-nearest scalar ops with flags discarded (the error-free transforms
 // only rely on RN correctness, not on the exception flags).
@@ -328,8 +328,8 @@ mod tests {
     #[test]
     fn constants_value_sanity() {
         let c = consts();
-        assert!((to_f64(c.pi) - std::f64::consts::PI).abs() < 1e-15);
-        assert!((to_f64(c.ln2) - std::f64::consts::LN_2).abs() < 1e-15);
-        assert!((to_f64(c.ln10) - std::f64::consts::LN_10).abs() < 1e-15);
+        assert!((to_f64(c.pi) - core::f64::consts::PI).abs() < 1e-15);
+        assert!((to_f64(c.ln2) - core::f64::consts::LN_2).abs() < 1e-15);
+        assert!((to_f64(c.ln10) - core::f64::consts::LN_10).abs() < 1e-15);
     }
 }

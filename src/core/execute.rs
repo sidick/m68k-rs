@@ -427,7 +427,7 @@ impl CpuCore {
             // hook. `step()` normally services the current level on return, so
             // defer it locally and restore it before invoking the hook.
             let deferred_irq = if CALL_INSTRUCTION_HOOK {
-                std::mem::take(&mut self.int_level)
+                core::mem::take(&mut self.int_level)
             } else {
                 0
             };

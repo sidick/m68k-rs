@@ -2,6 +2,8 @@
 //!
 //! Provides a human-readable summary of one M68000-family opcode word.
 
+use alloc::string::{String, ToString};
+
 use crate::core::types::CpuType;
 
 /// Register names for data registers

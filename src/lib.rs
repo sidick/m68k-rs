@@ -44,17 +44,27 @@
 //!   non-WebAssembly targets. Without it—and on WebAssembly—the same trace
 //!   machinery uses the portable Rust executor.
 //! - `trace-profile` adds opt-in trace and decoded-operation profiling,
-//!   activated at runtime with `M68K_TRACE_PROFILE=1`.
+//!   activated at runtime with `M68K_TRACE_PROFILE=1`. Implies `std`.
+//! - `std` (default) links against `std`. Disable it to build the crate as
+//!   `no_std` + `alloc`; the downstream binary then supplies a
+//!   `#[global_allocator]`. Only [`CpuCore::run_batch`] allocates at runtime,
+//!   so [`CpuCore::step`] and [`CpuCore::run_for_cycles`] hosts never touch
+//!   the heap.
 //!
-//! No features are enabled by default.
+//! Only `std` is enabled by default.
 
+#![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
 #![deny(rustdoc::broken_intra_doc_links)]
+
+#[macro_use]
+extern crate alloc;
 
 pub mod core;
 pub mod dasm;
 pub mod fpu;
 pub mod mmu;
+mod shim;
 
 // Re-export the embedding API at the crate root.
 pub use core::cpu::CpuCore;

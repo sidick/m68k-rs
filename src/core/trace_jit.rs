@@ -6,12 +6,19 @@
 
 #[cfg(all(feature = "jit", not(target_family = "wasm")))]
 use super::cpu::CFLAG_SET;
+use alloc::vec::Vec;
+
 use super::cpu::{CpuCore, NFLAG_SET, VFLAG_SET};
 use super::execute::RUN_MODE_BERR_AERR_RESET;
 use super::mem_ops::{BitSource, DecodedMemOp, FastEa};
 use super::memory::AddressBus;
 use super::op_cache::{AddrOp, BinaryOp, BitOp, CachedRunResult, DecodedSimpleOp, is_pre_68020};
 use super::types::{CpuType, Size};
+use core::cell::{Cell, RefCell};
+use core::fmt;
+#[cfg(all(feature = "jit", not(target_family = "wasm")))]
+use core::mem::{offset_of, size_of, transmute};
+use core::sync::atomic::{AtomicBool, Ordering};
 #[cfg(all(feature = "jit", not(target_family = "wasm")))]
 use cranelift_codegen::Context;
 #[cfg(all(feature = "jit", not(target_family = "wasm")))]
@@ -25,11 +32,6 @@ use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext};
 use cranelift_jit::{JITBuilder, JITModule};
 #[cfg(all(feature = "jit", not(target_family = "wasm")))]
 use cranelift_module::{Linkage, Module, default_libcall_names};
-use std::cell::{Cell, RefCell};
-use std::fmt;
-#[cfg(all(feature = "jit", not(target_family = "wasm")))]
-use std::mem::{offset_of, size_of, transmute};
-use std::sync::atomic::{AtomicBool, Ordering};
 
 // Guest code in large applications commonly places unrelated hot loops one
 // 8 KiB region apart. A 4K-entry direct-mapped cache aliases those heads
@@ -137,7 +139,7 @@ enum NativeTraceFn {
 
 static TRACE_JIT_HAS_CANDIDATES: AtomicBool = AtomicBool::new(false);
 
-thread_local! {
+crate::shim::thread_local_cell! {
     // Const-initialized so access compiles to a direct TLS slot read. The
     // lazily-initialized form re-ran its platform once-guard on every
     // access, and `try_execute_trace` probes once per batch entry and per
@@ -1136,7 +1138,7 @@ impl TraceJit {
                     let expected = &trace.code[segment.code_offset as usize
                         ..(segment.code_offset + segment.len) as usize];
                     let live = unsafe {
-                        std::slice::from_raw_parts(
+                        core::slice::from_raw_parts(
                             (cpu.fm_ptr as *const u8).add(off as usize),
                             segment.len as usize,
                         )
@@ -5160,8 +5162,8 @@ fn decode_move_mem_trace_op<B: AddressBus>(
     };
     let src_mode = (opcode >> 3) & 7;
     let dst_mode = (opcode >> 6) & 7;
-    let extensions = std::cell::Cell::new([0u16; 2]);
-    let extension_count = std::cell::Cell::new(0usize);
+    let extensions = core::cell::Cell::new([0u16; 2]);
+    let extension_count = core::cell::Cell::new(0usize);
     let mut read_ext = || -> Option<u16> {
         let count = extension_count.get();
         if count == 2 {

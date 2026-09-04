@@ -13,6 +13,9 @@
 //! 6888x "round to a decimal string" behavior, which is inherently inexact;
 //! it is not bit-accurate to a real chip's internal guard-digit algorithm.
 
+#[allow(unused_imports)]
+use crate::shim::F64Ext;
+
 use super::softfloat::{self, ExcFlags, RoundCtx, RoundMode};
 use super::types::FloatX80;
 

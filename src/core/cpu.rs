@@ -1,5 +1,7 @@
 //! Architectural CPU state, configuration, and memory-access helpers.
 
+use alloc::boxed::Box;
+
 use super::execute::RUN_MODE_BERR_AERR_RESET;
 use super::memory::{AddressBus, BusFaultKind};
 use super::op_cache::CachedOp;
@@ -835,7 +837,7 @@ impl CpuCore {
     #[inline]
     pub(crate) fn flush_sync<B: AddressBus>(&mut self, bus: &mut B) {
         if self.pending_sync_clocks > 0 {
-            let clocks = std::mem::take(&mut self.pending_sync_clocks);
+            let clocks = core::mem::take(&mut self.pending_sync_clocks);
             bus.sync(clocks);
         }
     }
@@ -1388,6 +1390,7 @@ impl CpuCore {
         if self.faulted() {
             return;
         }
+        #[cfg(feature = "std")]
         if std::env::var_os("M68K_DIAG_ADDRESS_ERROR").is_some() {
             eprintln!(
                 "m68k address error: addr={address:#010X} write={write} instr={instruction} \

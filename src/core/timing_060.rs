@@ -16,7 +16,8 @@
 //! opcode classification alone cannot derive.
 
 use super::cpu::CpuCore;
-use std::sync::OnceLock;
+use crate::shim::OnceLock;
+use alloc::{boxed::Box, vec::Vec};
 
 /// UM Tables 10-2/10-3 dispatch classes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

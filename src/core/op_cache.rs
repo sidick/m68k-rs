@@ -8,6 +8,8 @@
 //! Instruction fetch still occurs at the normal instruction boundary, so bus/address-error timing
 //! stays aligned with the interpreter.
 
+use alloc::boxed::Box;
+
 use super::cpu::CpuCore;
 use super::execute::{RUN_MODE_BERR_AERR_RESET, RUN_MODE_NORMAL};
 use super::memory::AddressBus;

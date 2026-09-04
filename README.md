@@ -18,6 +18,7 @@ high-level emulation (HLE).
 - **FPU emulation**: Software 80-bit extended precision, packed decimal, and model-specific 68881/68882/68040/68060 behavior
 - **MMU emulation**: 68030/68040/68060 translation, ATCs, transparent translation, `PTEST`, fault frames, and writeback
 - **HLE-ready**: Built-in trap interception for High-Level Emulation
+- **`no_std` capable**: Disable the default `std` feature to embed the emulator in bare-metal hosts
 - **Save-state ready**: Optional `serde` support serializes architectural state while rebuilding runtime caches on load
 - **Extensively tested**: Validated against multiple industry-standard test suites
 
@@ -37,6 +38,27 @@ The default build has no JIT compiler dependency. Native applications that use
 [dependencies]
 m68k = { version = "0.7", features = ["jit"] }
 ```
+
+### `no_std`
+
+Disabling the default `std` feature builds the crate against `core` + `alloc`:
+
+```toml
+[dependencies]
+m68k = { version = "0.7", default-features = false }
+```
+
+The downstream binary must supply a `#[global_allocator]`. In practice it is
+never called on the interpreter paths: `step()` and `run_for_cycles()` perform
+**zero** heap allocations, which `tests/alloc_probe.rs` asserts. Only
+`run_batch()` allocates, building a 1 MiB decode table and multi-megabyte trace
+caches on first use — so memory-constrained hosts should stay on the
+interpreter paths, or shrink `TRACE_CACHE_SIZE`.
+
+`no_std` builds assume a single-threaded emulator: the lazily built timing
+tables and the trace cache use single-threaded interior mutability in place of
+`OnceLock` and `thread_local!`. Driving two `CpuCore`s from different cores in
+a `no_std` build is not supported.
 
 ### Basic Usage
 

@@ -5,6 +5,9 @@
 //! rounding, FPSR exception state, packed-decimal formats, transcendentals,
 //! conditionals, register moves, and CPU-specific FSAVE/FRESTORE frames.
 
+#[allow(unused_imports)]
+use crate::shim::F64Ext;
+
 use super::packed;
 use super::softfloat::{self, ExcFlags, FpCmp, Precision, RoundCtx, RoundMode};
 use super::transcendental;

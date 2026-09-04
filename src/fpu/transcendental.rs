@@ -9,6 +9,9 @@
 //! chip-bit-exact: the 6888x uses its own CORDIC/polynomial microcode, and a
 //! bare 68040 traps these operations to a software FPSP. FMOD/FREM are exact.
 
+#[allow(unused_imports)]
+use crate::shim::F64Ext;
+
 use super::dd::{self, Df};
 use super::softfloat::{self, ExcFlags, FpCmp, RoundCtx, RoundMode};
 use super::types::FloatX80;
@@ -82,7 +85,7 @@ fn exp_reduced(r: Df) -> Df {
 /// e^p for an arbitrary Df exponent `p`: reduce p = k*ln2 + r (|r| <= ln2/2),
 /// then exp(p) = 2^k * exp(r).
 fn exp_dd(p: Df) -> Df {
-    let k = (p.hi.to_f64() * std::f64::consts::LOG2_E).round();
+    let k = (p.hi.to_f64() * core::f64::consts::LOG2_E).round();
     let ki = k as i32;
     let r = dd::sub(p, dd::mul_x80(dd::consts().ln2, fx(k)));
     dd::mul_x80(exp_reduced(r), two_pow(ki))
@@ -200,7 +203,7 @@ fn scale_df(d: Df, n: i32) -> Df {
 fn ln_df(x: Df) -> Df {
     let mut e = unbiased_exp(x.hi);
     let mut f = scale_df(x, -e);
-    if f.hi.to_f64() > std::f64::consts::SQRT_2 {
+    if f.hi.to_f64() > core::f64::consts::SQRT_2 {
         f = scale_df(f, -1);
         e += 1;
     }
@@ -283,7 +286,7 @@ fn log1p(x: FloatX80, ctx: RoundCtx, f: &mut ExcFlags) -> FloatX80 {
 /// k*(pi/2) does not exceed the ~128-bit reduction precision (very large
 /// arguments degrade, as they do on real hardware).
 fn reduce_quadrant(x: FloatX80) -> (i64, Df) {
-    let kf = (x.to_f64() * std::f64::consts::FRAC_2_PI).round();
+    let kf = (x.to_f64() * core::f64::consts::FRAC_2_PI).round();
     let k = kf as i64;
     let r = dd::sub(Df::from_x80(x), dd::mul_x80(dd::consts().pi_2, fx(kf)));
     (k, r)
